@@ -107,10 +107,7 @@ def _get_build_targets(ctx, buildname = None, include_all = False):
 	except:
 		builds = {}
 
-	try:
-		allbuilddata = builds['all']
-	except:
-		allbuilddata = {}
+	allbuilddata = builds.get('all', {})
 
 	# It's mandatory to have the build declared.
 	try:
@@ -143,36 +140,14 @@ def _get_build_target(ctx, targetname, buildname = None):
 	except:
 		raise Exception("BUILDS dictionary is not declared.")
 
-	try:
-		allbuilddata = builds['all']
-	except:
-		allbuilddata = {}
-
-	try:
-		allalldata = allbuilddata['all']
-	except:
-		allalldata = {}
-
-	try:
-		alldata = allbuilddata[targetname]
-	except:
-		alldata = {}
+	allbuilddata = builds.get('all', {})
+	allalldata = allbuilddata.get('all', {})
+	alldata = allbuilddata.get(targetname, {})
 
 	# It's mandatory to have the build declared.
-	try:
-		targetbuilddata = builds[buildname]
-	except:
-		targetbuilddata = {}
-
-	try:
-		targetalldata = targetbuilddata['all']
-	except:
-		targetalldata = {}
-
-	try:
-		targetdata = targetbuilddata[targetname]
-	except:
-		targetdata = {}
+	targetbuilddata = builds.get(buildname, {})
+	targetalldata = targetbuilddata.get('all', {})
+	targetdata = targetbuilddata.get(targetname, {})
 
 	#if not allbuilddata and not targetbuilddata:
 	#	raise Exception("Build '" + buildname + "' is not declared.")
