@@ -1,0 +1,137 @@
+#!/usr/bin/env python
+
+APPNAME = 'ukoct'
+VERSION = '0.1.0'
+MAJOR = 0
+
+top = '.'
+out = 'build'
+src = 'src'
+inc = 'include'
+ext = 'ext'
+ext_include = ext + '/include'
+spec = 'spec'
+test = 'test'
+
+src_opencl = src + '/opencl'
+opencl_srcglob = '**/*.cl'
+
+LIBNAME = APPNAME + str(MAJOR)
+SPECNAME = APPNAME + '_spec'
+
+BUILDS = {
+	'all': {
+		'all': {
+			#'load': 'tool',
+			#'load': ['tool1', 'tool2', {'input': 'tool1', 'mandatory': True}]
+			'load': 'compiler_cxx',
+			'find_program': [
+				# e.g. {'filename': 'diff', 'mandatory': True},
+			],
+			'check': [
+				{
+					'compiler': 'cxx',
+					'lib': 'OpenCL',
+					'mandatory': True,
+					'uselib_store': 'OPENCL',
+				},
+			],
+			'includes': [inc, src, ext_include, ext + '/ukc-plas/src'],
+			'cxxflags': ['--std=c++11', '-g'], #e.g. ['-Wall'],
+			'linkflags': [],
+		},
+
+		LIBNAME: {
+			'features': 'cxx cxxstlib', # e.g. 'cxx cxxstlib',
+			'source': [
+                # e.g. src + '/cnf.cpp',
+                src + '/ukoct.cpp',
+            ],
+		},
+
+		APPNAME: {
+			'features': 'cxx cxxprogram', # e.g. 'cxx cxxprogram',
+			'use': [LIBNAME, 'OPENCL'],
+			'source': [src + '/main.cpp'],
+		},
+
+		#SPECNAME: {
+		#	'features': 'cxxprogram',
+		#	'use': APPNAME,
+		#	'source': [spec + '/uksat_spec.cpp'],
+		#}
+	},
+
+	'debug': {
+		all: {
+			'cxxflags': ['-g', '-O1'],
+			'linkflags': ['g'],
+		},
+	},
+
+	'release': {
+		'all': {
+			'cxxflags': ['-O2', '-s']
+		}
+	},
+
+	'profile': {
+		'all': {
+			'cxxflags': ['-O2', '-g']
+		},
+	}
+}
+
+
+from waflib.Build import BuildContext
+from waflib.Task import Task
+
+
+def options(ctx):
+	ctx.load('wafbuild')
+
+	# ctx.add_option('-O', '--output', action='store', default='-', # type=int,
+	# 	help='Specifies the output file or folder.')
+
+
+def configure(ctx):
+    ctx.load('wafbuild')
+    #ctx.check(compiler='cxx',
+    #    lib='OpenCL',
+    #    mandatory=True, 
+    #    uselib_store='OPENCL')
+
+
+def build(ctx):
+	import shutil
+	ctx.load('wafbuild')
+	#shutil.copytree(src_opencl, out + '/' + src_opencl)
+
+
+#def distclean(ctx):
+#	import shutil
+#	pycache_node = ctx.path.find_node('__pycache__')
+#	shutil.rmtree(pycache_node.abspath())
+#	for node in ctx.path.ant_glob('*.log'):
+#		node.delete()
+#	ctx.execute()
+
+# Left out
+def compileSources(ctx):
+	import os
+	base = ctx.path.find_node(src_opencl)
+	escapes = {
+		'\a': '\\a',
+		'\b': '\\b',
+		'\f': '\\f',
+		'\n': '\\n',
+		'\r': '\\r',
+		'\t': '\\t',
+		'\v': '\\v',
+		'\\': '\\\\',
+		'\'': '\\\'',
+		'"': '\\"',
+	}
+	print(base.abspath())
+	for file in base.ant_glob(opencl_srcglob):
+		print(file)
