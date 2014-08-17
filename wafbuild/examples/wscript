@@ -1,0 +1,128 @@
+#!/usr/bin/env python
+
+APPNAME = 'ukoct'
+VERSION = '0.1.0'
+MAJOR = 0
+
+top = '.'
+out = 'build'
+src = 'src'
+inc = 'include'
+ext = 'ext'
+ext_include = ext + '/include'
+spec = 'spec'
+test = 'test'
+
+src_opencl = src + '/opencl'
+opencl_srcglob = '**/*.cl'
+
+LIBNAME = APPNAME + str(MAJOR)
+SPECNAME = APPNAME + '_spec'
+
+BUILDS = {
+	#'default': 'profile',
+	'all': {
+		'all': {
+			#'load': 'tool',
+			#'load': ['tool1', 'tool2', {'input': 'tool1', 'mandatory': True}]
+			'load': 'compiler_cxx',
+			'find_program': [
+				# e.g. {'filename': 'diff', 'mandatory': True},
+			],
+			'check': [
+				{
+					'compiler': 'cxx',
+					'lib': 'OpenCL',
+					'mandatory': True,
+					'uselib_store': 'OPENCL',
+				},
+			],
+			'includes': [inc, src, ext_include, ext + '/ukc-plas/src'],
+			'cxxflags CXX_NAME == "gcc"': ['--std=c++11'], #e.g. ['-Wall'],
+		},
+
+		LIBNAME: {
+			'features': 'cxx cxxstlib', # e.g. 'cxx cxxstlib',
+			'source': [
+                # e.g. src + '/cnf.cpp',
+                src + '/ukoct.cpp',
+            ],
+		},
+
+		APPNAME: {
+			'features': 'cxx cxxprogram', # e.g. 'cxx cxxprogram',
+			'use': [LIBNAME, 'OPENCL'],
+			'source': [src + '/main.cpp'],
+		},
+
+		#SPECNAME: {
+		#	'features': 'cxxprogram',
+		#	'use': APPNAME,
+		#	'source': [spec + '/uksat_spec.cpp'],
+		#}
+	},
+
+	'debug': {
+		'all': {
+			'+cxxflags  CXX_NAME == "gcc"  ': ['-g', '-O1'],
+			'+linkflags CXX_NAME == "gcc"  ': ['-g'],
+
+			'+cxxflags  CXX_NAME == "msvc" ': ['/Zi'],
+			'+linkflags CXX_NAME == "msvc" ': ['/DEBUG'],
+		},
+	},
+
+	'release': {
+		'all': {
+			'+cxxflags  CXX_NAME == "gcc"  ': ['-O2', '-s'],
+
+			'+cxxflags  CXX_NAME == "msvc" ': ['/O2'],
+		}
+	},
+
+	'profile': {
+		'all': {
+			'+cxxflags  CXX_NAME == "gcc"  ': ['-g', '-pg'],
+			'+linkflags CXX_NAME == "gcc"  ': ['-g', '-pg'],
+
+			'+linkflags CXX_NAME == "msvc" ': ['/PROFILE'],  # ... only available only in Enterprise (team development) versions. (sic)
+		},
+	}
+
+	'profile-valgrind': {
+		'all': {
+			'+cxxflags  CXX_NAME == "gcc"  ': ['-O2', '-g'],
+			'+linkflags CXX_NAME == "gcc"  ': ['-g'],
+		},
+	}
+}
+
+
+from waflib.Build import BuildContext
+from waflib.Task import Task
+
+
+def options(ctx):
+	ctx.load('wafbuild')
+
+
+def configure(ctx):
+    ctx.load('wafbuild')
+
+
+def build(ctx):
+	import shutil
+	ctx.load('wafbuild')
+
+
+def list_builds(ctx):
+	ctx.load('wafbuild')
+
+
+#def distclean(ctx):
+#	import shutil
+#	pycache_node = ctx.path.find_node('__pycache__')
+#	shutil.rmtree(pycache_node.abspath())
+#	for node in ctx.path.ant_glob('*.log'):
+#		node.delete()
+#	ctx.execute()
